@@ -1,39 +1,9 @@
-import uuid
-from pydantic import BaseModel, Field
-from actions.action_base import ActionBase
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QTextEdit
-from PyQt6.QtCore import QRect
+from PyQt6.QtCore import QRect, pyqtSignal
 from PyQt6.QtGui import QFont, QColor, QPainter, QTextFormat
 from PyQt6.QtWidgets import QWidget, QPlainTextEdit, QTextEdit
 from PyQt6 import QtGui, QtCore
-class PythonExecutorInput(BaseModel):
-    code: str = Field(description="python代码", title="pytho代码", default="")
-
-
-class PythonExecutorActoin(ActionBase):
-    name: str = "执行python代码"
-    description: str = "执行python代码"
-    args: PythonExecutorInput
-    output_save_name:str = "python_output"
-
-    def config_page_ui(self):
-        code_editor = QCodeEditor(display_line_numbers=True,
-                                    highlight_current_line=True,
-                                    syntax_high_lighter=PythonHighlighter)
-        self._config_ui.config_list.addWidget(code_editor)
-        self._ui_name_and_line_edit["code"] = code_editor
-        code_editor.setPlainText('# 保存输出结果\n' + self.output_save_name + " = ''")
-        
-
-    # 执行python代码
-    def run(self, code):
-        environent = {}
-        exec(code, environent)
-        return environent[self.output_save_name]
-    
-
-
 class LineNumberArea(QWidget):
     def __init__(self, editor):
         QWidget.__init__(self, editor)
@@ -111,6 +81,7 @@ class QCodeEditor(QPlainTextEdit):
                  syntax_high_lighter=None, *args):
         """
         Parameters
+
         ----------
         display_line_numbers : bool
             switch on/off the presence of the lines number bar
@@ -120,11 +91,9 @@ class QCodeEditor(QPlainTextEdit):
             should be inherited from QSyntaxHighlighter
 
         """
-        super(QCodeEditor, self).__init__()
-
-        self.setFont(QFont("Microsoft YaHei UI Light", 11))
+        super(QCodeEditor, self).__init__(*args)
+        self.setFont(QFont("Microsoft YaHei UI Light", 12))
         self.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
-
         self.DISPLAY_LINE_NUMBERS = display_line_numbers
 
         if display_line_numbers:
@@ -150,7 +119,7 @@ class QCodeEditor(QPlainTextEdit):
             cr = self.contentsRect()
             rec = QRect(cr.left(), cr.top(), self.number_bar.get_width(), cr.height())
             self.number_bar.setGeometry(rec)
-
+        
         QPlainTextEdit.resizeEvent(self, *e)
 
     # 获取代码
